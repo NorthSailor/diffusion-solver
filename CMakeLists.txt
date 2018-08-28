@@ -15,4 +15,6 @@ add_executable(diffusion
         number.h
         problem.c
         problem.h
+        solver.c
+        solver.h
 )

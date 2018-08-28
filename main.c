@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <assert.h>
 #include "matrix.h"
 #include "problem.h"
+#include "solver.h"
 
 void print_double_usage()
 {
@@ -45,20 +47,14 @@ int main(int argc, char const *argv[])
 
 	fclose(input_fp);
 
-	printf("%d - %d - %.2f - %.2f - '%s'\n", problem->width,
-	       problem->height, problem->physical_width,
-	       problem->physical_height, problem->field_name);
+	/* Shouldn't fail unless the memory allocation fails and thus we don't
+	 * do any error checking. */
+	struct Solver *solver = solver_from_problem(problem);
+	assert(solver != NULL);
 
-	struct BoundaryCondition *b = problem->boundary_conditions;
-	int index = 1;
-	while (b != NULL) {
-		printf("%d) %d %d %d %f\n", index, b->boundary, b->start,
-		       b->end, b->value);
-		b = b->next;
-		index++;
-	}
+	solver_solve(solver);
 
-	problem_free(problem);
+	solver_free(solver);
 
 	return 0;
 }
