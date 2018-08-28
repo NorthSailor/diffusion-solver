@@ -2,6 +2,7 @@
 BasedOnStyle: LLVM
 Language: Cpp
 IndentWidth: 8
+TabWidth: 8
 UseTab: Always
 BreakBeforeBraces: Linux
 AlwaysBreakBeforeMultilineStrings: true
@@ -19,3 +20,4 @@ BreakBeforeBinaryOperators: NonAssignment
 BreakStringLiterals: false
 SortIncludes:    false
 ContinuationIndentWidth: 8
+ColumnLimit: 80
