@@ -49,6 +49,13 @@ int main(int argc, char const *argv[])
 	       problem->height, problem->physical_width,
 	       problem->physical_height, problem->field_name);
 
+	struct BoundaryCondition *b = problem->boundary_conditions;
+	while (b != NULL) {
+		printf("%d %d %d %f\n", b->boundary, b->start, b->end,
+		       b->value);
+		b = b->next;
+	}
+
 	problem_free(problem);
 
 	return 0;
