@@ -34,13 +34,13 @@ int main(int argc, char const *argv[])
 	/* Find and open the input file. */
 	FILE *input_fp = fopen(input_file_path, "r");
 	if (!input_fp) {
-		printf("Failed to open the input file.\n");
+		fprintf(stderr, "Failed to open the input file.\n");
 		return 1;
 	}
 
 	struct Problem *problem = problem_from_file(input_fp);
 	if (!problem) {
-		printf("Failed to parse the input file.\n");
+		fprintf(stderr, "Failed to parse the input file.\n");
 		fclose(input_fp);
 		return 1;
 	}
@@ -53,6 +53,16 @@ int main(int argc, char const *argv[])
 	assert(solver != NULL);
 
 	solver_solve(solver);
+
+	FILE *output_fp = fopen(output_file_path, "w");
+	if (!output_fp) {
+		fprintf(stderr, "Failed to open output file '%s'.\n",
+			output_file_path);
+		return 1;
+	}
+
+	solver_save_results(solver, output_fp);
+	fclose(output_fp);
 
 	solver_free(solver);
 

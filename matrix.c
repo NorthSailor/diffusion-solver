@@ -30,20 +30,12 @@ void matrix_set(struct Matrix *matrix, int row, int column, number_t value)
 /**
  * Writes the contents of the matrix in a binary file.
  * @param matrix The matrix to save.
- * @param path The path to the output file.
+ * @param fp The output file.
  */
-void matrix_write_to_file(struct Matrix *matrix, const char *path)
+void matrix_write_to_file(struct Matrix *matrix, FILE *fp)
 {
-	FILE *file = fopen(path, "w");
-	if (!file) {
-		fprintf(stderr, "Failed to open output file: '%s'.\n", path);
-		exit(1);
-	}
-
 	fwrite((void *)matrix->data, sizeof(number_t),
-	       matrix->rows * matrix->columns, file);
-
-	fclose(file);
+	       matrix->rows * matrix->columns, fp);
 }
 
 void matrix_write_vector_field(struct Matrix *x_matrix, struct Matrix *y_matrix,

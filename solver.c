@@ -45,3 +45,8 @@ void solver_solve(struct Solver *solver)
 
 	printf("Solution converged after %d iterations.\n", iteration_count);
 }
+
+void solver_save_results(struct Solver *solver, FILE *fp)
+{
+	matrix_write_to_file(solver->source, fp);
+}
