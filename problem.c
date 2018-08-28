@@ -9,9 +9,9 @@ static void read_grid_definition(FILE *fp, struct Problem *problem)
 
 	char field_name_buffer[256];
 
-	sscanf(buffer, "%d %d %f %f %s\n", &problem->width, &problem->height,
-	       &problem->physical_width, &problem->physical_height,
-	       field_name_buffer);
+	sscanf(buffer, "%d %d %" NUMBER_FMT " %" NUMBER_FMT " %s\n",
+	       &problem->width, &problem->height, &problem->physical_width,
+	       &problem->physical_height, field_name_buffer);
 
 	size_t name_length = strlen(field_name_buffer);
 	problem->field_name = (char *)calloc(name_length, sizeof(char));
@@ -33,8 +33,8 @@ static void read_boundary_conditions(FILE *fp, struct Problem *problem)
 		struct BoundaryCondition *b = *next;
 
 		char edge_buffer[5];
-		sscanf(buffer, "%s %d %d %f", edge_buffer, &b->start, &b->end,
-		       &b->value);
+		sscanf(buffer, "%s %d %d %" NUMBER_FMT, edge_buffer, &b->start,
+		       &b->end, &b->value);
 
 		if (strncmp(edge_buffer, "X+", 2) == 0)
 			b->boundary = BC_XPLUS;

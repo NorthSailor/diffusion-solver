@@ -50,10 +50,12 @@ int main(int argc, char const *argv[])
 	       problem->physical_height, problem->field_name);
 
 	struct BoundaryCondition *b = problem->boundary_conditions;
+	int index = 1;
 	while (b != NULL) {
-		printf("%d %d %d %f\n", b->boundary, b->start, b->end,
-		       b->value);
+		printf("%d) %d %d %d %f\n", index, b->boundary, b->start,
+		       b->end, b->value);
 		b = b->next;
+		index++;
 	}
 
 	problem_free(problem);
