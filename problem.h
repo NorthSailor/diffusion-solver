@@ -2,6 +2,7 @@
 #define PROBLEM_H
 
 #include <inttypes.h>
+#include <stdio.h>
 #include "number.h"
 
 struct Problem {
@@ -13,5 +14,8 @@ struct Problem {
 
 	char *field_name;
 };
+
+struct Problem *problem_from_file(FILE *fp);
+void problem_free(struct Problem *problem);
 
 #endif /* PROBLEM_H */

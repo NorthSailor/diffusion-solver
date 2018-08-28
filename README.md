@@ -12,8 +12,13 @@ It takes a problem input file as input and produces an output binary file contai
 
 ## Input file format
 
-The first section of the input file describes the grid. The following options need to be given, formatted as `OPTION_NAME=value`:
+The first line of the file defines the grid and has the following format:
 
+```
+WIDTH HEIGHT PHYSICAL_WIDTH PHYSICAL_HEIGHT FIELD_NAME
+```
+
+Where:
 * `WIDTH`: Integer grid width.
 * `HEIGHT`: Integer grid height.
 * `PHYSICAL_WIDTH`: Physical width of the domain.
@@ -26,7 +31,7 @@ After these options have been given, the boundary conditions are defined in sepa
 BOUNDARY START END VALUE
 ```
 
-The end values are not inclusive.
+All grid indices are zero-indexed and the end values are not inclusive.
 
 `BOUNDARY` can be one of: `X-`, `X+`, `Y-`, `Y+`.
 
