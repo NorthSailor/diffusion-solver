@@ -67,6 +67,8 @@ static void solver_advance_iteration(struct Solver *solver)
 	/* Apply the stencil while finding the residual for the previous
 	 * iteration. */
 	solver->residual = 0.0;
+	number_t residual = 0.0;
+#pragma omp parallel for reduction(+ : residual)
 	for (int x = 1; x < (solver->problem->width - 1); x++) {
 		for (int y = 1; y < (solver->problem->height - 1); y++) {
 			int i = y * stride + x;
@@ -78,9 +80,11 @@ static void solver_advance_iteration(struct Solver *solver)
 			solver->dest->data[i] = result;
 			number_t center = solver->source->data[i];
 			number_t point_error = center - result;
-			solver->residual += point_error * point_error;
+			residual += point_error * point_error;
 		}
 	}
+
+	solver->residual = residual;
 
 	/* Pointer swap. */
 	struct Matrix *temp = solver->source;
