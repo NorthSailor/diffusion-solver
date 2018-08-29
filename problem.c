@@ -5,7 +5,10 @@
 static void read_grid_definition(FILE *fp, struct Problem *problem)
 {
 	char buffer[256];
-	fgets(buffer, 256, fp);
+	if (!fgets(buffer, 256, fp)) {
+		fprintf(stderr, "Failed to read the grid definition line.\n");
+		exit(1);
+	}
 
 	char field_name_buffer[256];
 

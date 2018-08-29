@@ -64,19 +64,8 @@ static void apply_boundary_conditions(struct Matrix *matrix,
 static void solver_advance_iteration(struct Solver *solver)
 {
 	int stride = solver->problem->width;
-	/* Apply the stencil. */
-	for (int x = 1; x < (solver->problem->width - 1); x++) {
-		for (int y = 1; y < (solver->problem->height - 1); y++) {
-			int i = y * stride + x;
-			number_t N = solver->source->data[i + stride];
-			number_t S = solver->source->data[i - stride];
-			number_t W = solver->source->data[i - 1];
-			number_t E = solver->source->data[i + 1];
-			solver->dest->data[i] = 0.25 * (N + S + W + E);
-		}
-	}
-
-	/* Find the residual. */
+	/* Apply the stencil while finding the residual for the previous
+	 * iteration. */
 	solver->residual = 0.0;
 	for (int x = 1; x < (solver->problem->width - 1); x++) {
 		for (int y = 1; y < (solver->problem->height - 1); y++) {
@@ -85,8 +74,10 @@ static void solver_advance_iteration(struct Solver *solver)
 			number_t S = solver->source->data[i - stride];
 			number_t W = solver->source->data[i - 1];
 			number_t E = solver->source->data[i + 1];
+			number_t result = 0.25 * (N + S + W + E);
+			solver->dest->data[i] = result;
 			number_t center = solver->source->data[i];
-			number_t point_error = N + S + W + E - 4 * center;
+			number_t point_error = center - result;
 			solver->residual += point_error * point_error;
 		}
 	}
@@ -116,6 +107,10 @@ void solver_solve(struct Solver *solver)
 		/* Check for convergence. */
 		if (solver->residual < tolerance) {
 			break;
+		}
+
+		if (iteration_count % 1000 == 0) {
+			printf("Residual: %" NUMBER_FMT "\n", solver->residual);
 		}
 	}
 
