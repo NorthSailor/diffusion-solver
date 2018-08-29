@@ -50,6 +50,9 @@ static void read_boundary_conditions(FILE *fp, struct Problem *problem)
 			exit(1);
 		}
 
+		b->next = NULL; /* Make sure we won't segfault if this is the
+				   last one .*/
+
 		next = &(*next)->next;
 	}
 }
