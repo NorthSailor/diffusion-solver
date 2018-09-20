@@ -16,6 +16,6 @@ number_t matrix_get(struct Matrix *matrix, int row, int column);
 void matrix_set(struct Matrix *matrix, int row, int column, number_t value);
 void matrix_write_to_file(struct Matrix *matrix, FILE *fp);
 void matrix_write_vector_field(struct Matrix *x_matrix, struct Matrix *y_matrix,
-			       const char *path);
+			       FILE *fp);
 
 #endif /* MATRIX_H */

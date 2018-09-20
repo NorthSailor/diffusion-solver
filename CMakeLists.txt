@@ -27,3 +27,5 @@ add_executable(diffusion
         solver.c
         solver.h
 )
+
+target_link_libraries(diffusion m)

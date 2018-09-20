@@ -1,6 +1,7 @@
 #include "solver.h"
 #include "matrix.h"
 #include "problem.h"
+#include "math.h"
 #include <stdlib.h>
 
 struct Solver *solver_from_problem(struct Problem *problem)
@@ -24,36 +25,66 @@ void solver_free(struct Solver *solver)
 static void apply_boundary_conditions(struct Matrix *matrix,
 				      struct BoundaryCondition *first)
 {
+	/* Apply no-flow conditions everywhere that may be overwritten by fixed
+	 * potential values. */
+	/* X */
+	int plus_offset_x = matrix->columns * (matrix->rows - 1);
+	for (int i = 0; i < matrix->columns; i++) {
+		matrix->data[i] = matrix->data[i + matrix->columns];
+		matrix->data[i + plus_offset_x] =
+			matrix->data[i + plus_offset_x - matrix->columns];
+	}
+	/* Y */
+	int plus_offset_y = matrix->columns - 1;
+	int stride_y = matrix->columns;
+	for (int i = 0; i < matrix->rows; i++) {
+		matrix->data[i * matrix->columns] =
+			matrix->data[i * matrix->columns + 1];
+		matrix->data[i * matrix->columns + plus_offset_y] =
+			matrix->data[i * matrix->columns + plus_offset_y - 1];
+	}
+
 	struct BoundaryCondition *b = first;
 	while (b) {
 		int stride = 1;
 		int index = 0;
+		int derivative_offset = 0;
 
 		/* The following code assumes that the matrices are zero-indexed
 		 * and that the X value corresponds to columns while the Y value
 		 * to rows. In other words: index = y * columns + x (row-major
 		 * order) */
+		/* We apply Neumann BC's where the value is the spatial
+		 * derivative normal to the boundary, representing
+		 * inflow/outflow velocity.
+		 */
 		switch (b->boundary) {
 		case BC_XPLUS:
 			index = matrix->columns * (matrix->rows - 1) + b->start;
 			stride = 1;
+			derivative_offset = -matrix->columns;
 			break;
 		case BC_XMINUS:
 			index = b->start;
 			stride = 1;
+			derivative_offset = matrix->columns;
 			break;
 		case BC_YMINUS:
 			index = b->start * matrix->columns;
 			stride = matrix->columns;
+			derivative_offset = 1;
 			break;
 		case BC_YPLUS:
 			index = (b->start + 1) * matrix->columns - 1;
 			stride = matrix->columns;
+			derivative_offset = -1;
 			break;
 		}
 
 		for (int i = b->start; i < b->end; i++) {
-			matrix->data[index] = b->value;
+			matrix->data[index] =
+				matrix->data[index + derivative_offset]
+				+ b->value;
 			index += stride;
 		}
 
@@ -101,11 +132,13 @@ void solver_solve(struct Solver *solver)
 	apply_boundary_conditions(solver->dest,
 				  solver->problem->boundary_conditions);
 
-	number_t tolerance = 0.005;
+	number_t tolerance = 0.000005;
 	int iteration_count = 0;
 
 	while (1) {
 		solver_advance_iteration(solver);
+		apply_boundary_conditions(solver->source,
+					  solver->problem->boundary_conditions);
 		iteration_count++;
 
 		/* Check for convergence. */
@@ -114,7 +147,13 @@ void solver_solve(struct Solver *solver)
 		}
 
 		if (iteration_count % 1000 == 0) {
-			printf("Residual: %" NUMBER_FMT "\n", solver->residual);
+			printf("Iteration: %d - Residual: %f\n",
+			       iteration_count, solver->residual);
+		}
+
+		if (iteration_count > 100000) {
+			printf("Max iteration count exceeded.\n");
+			return;
 		}
 	}
 
@@ -124,4 +163,52 @@ void solver_solve(struct Solver *solver)
 void solver_save_results(struct Solver *solver, FILE *fp)
 {
 	matrix_write_to_file(solver->source, fp);
+}
+
+void solver_save_velocity(struct Solver *solver, FILE *fp)
+{
+	struct Matrix *psi = solver->source;
+	struct Matrix *u = matrix_new(psi->rows, psi->columns);
+	struct Matrix *v = matrix_new(psi->rows, psi->columns);
+
+	for (int x = 0; x < psi->columns; x++) {
+		for (int y = 0; y < psi->rows; y++) {
+			int index_N = (y + 1) * psi->columns + x;
+			int index_S = (y - 1) * psi->columns + x;
+			int index_W = y * psi->columns + x - 1;
+			int index_E = y * psi->columns + x + 1;
+			int index = y * psi->columns + x;
+
+			/* U field */
+			float uval = 0.0f;
+			if (x == 0) {
+				uval = psi->data[index_E] - psi->data[index];
+			} else if (x == (psi->columns - 1)) {
+				uval = psi->data[index] - psi->data[index_W];
+			} else {
+				uval = 0.5f
+				       * (psi->data[index_E]
+					  - psi->data[index_W]);
+			}
+
+			/* V field */
+			float vval = 0.0f;
+			if (y == 0) {
+				vval = psi->data[index_N] - psi->data[index];
+			} else if (y == (psi->rows - 1)) {
+				vval = psi->data[index] - psi->data[index_S];
+			} else {
+				vval = 0.5f
+				       * (psi->data[index_N]
+					  - psi->data[index_S]);
+			}
+			u->data[index] = uval;
+			v->data[index] = vval;
+		}
+	}
+
+	matrix_write_vector_field(u, v, fp);
+
+	matrix_free(u);
+	matrix_free(v);
 }

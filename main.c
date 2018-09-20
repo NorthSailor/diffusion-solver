@@ -64,6 +64,14 @@ int main(int argc, char const *argv[])
 	solver_save_results(solver, output_fp);
 	fclose(output_fp);
 
+	output_fp = fopen("velocity.bin", "w");
+	if (output_fp) {
+		solver_save_velocity(solver, output_fp);
+	} else {
+		fprintf(stderr, "Failed to open velocity field for writing.");
+	}
+	fclose(output_fp);
+
 	solver_free(solver);
 
 	return 0;

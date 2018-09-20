@@ -21,5 +21,6 @@ void solver_free(struct Solver *solver);
 void solver_solve(struct Solver *solver);
 
 void solver_save_results(struct Solver *solver, FILE *fp);
+void solver_save_velocity(struct Solver *solver, FILE *fp);
 
 #endif /* SOLVER_H */

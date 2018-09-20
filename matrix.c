@@ -39,20 +39,12 @@ void matrix_write_to_file(struct Matrix *matrix, FILE *fp)
 }
 
 void matrix_write_vector_field(struct Matrix *x_matrix, struct Matrix *y_matrix,
-			       const char *path)
+			       FILE *fp)
 {
-	FILE *file = fopen(path, "w");
-	if (!file) {
-		fprintf(stderr, "Failed to open output file: '%s'.\n", path);
-		exit(1);
-	}
-
 	/* We assume that the matrices have the same dimensions. */
 	int size = x_matrix->rows * x_matrix->columns;
 	for (int i = 0; i < size; i++) {
-		fwrite(&x_matrix->data[i], sizeof(number_t), 1, file);
-		fwrite(&y_matrix->data[i], sizeof(number_t), 1, file);
+		fwrite(&x_matrix->data[i], sizeof(number_t), 1, fp);
+		fwrite(&y_matrix->data[i], sizeof(number_t), 1, fp);
 	}
-
-	fclose(file);
 }
