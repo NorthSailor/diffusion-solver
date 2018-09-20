@@ -146,6 +146,7 @@ void solver_solve(struct Solver *solver)
 
 	number_t tolerance = 0.000005;
 	int iteration_count = 0;
+	int max_iterations = 5000000; /* @todo Let the user adjust this. */
 
 	while (1) {
 		solver_advance_iteration(solver);
@@ -155,7 +156,7 @@ void solver_solve(struct Solver *solver)
 
 		/* Check for convergence. */
 		if (solver->residual < tolerance) {
-			printf("Solution converged.\n", iteration_count);
+			printf("Solution converged.\n");
 			break;
 		}
 
@@ -164,7 +165,7 @@ void solver_solve(struct Solver *solver)
 			       iteration_count, solver->residual);
 		}
 
-		if (iteration_count > 100000) {
+		if (iteration_count > max_iterations) {
 			printf("Maximum iteration count exceeded.\n");
 			break;
 		}
