@@ -1,6 +1,6 @@
 # Diffusion solver
 
-This program solves the Poisson equation with different boundary conditions on a rectangular structured grid.
+This program solves the Laplace equation with different boundary conditions on a rectangular structured grid.
 
 It takes a problem input file as input and produces an output binary file containing the final converged solution field (hopefully).
 
