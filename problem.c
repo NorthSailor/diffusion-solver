@@ -87,8 +87,9 @@ void problem_free(struct Problem *problem)
 {
 	struct BoundaryCondition *b = problem->boundary_conditions;
 	while (b != NULL) {
-		free(b);
+		struct BoundaryCondition *prev = b;
 		b = b->next;
+		free(prev);
 	}
 
 	free(problem->field_name);
