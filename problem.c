@@ -35,9 +35,10 @@ static void read_boundary_conditions(FILE *fp, struct Problem *problem)
 		(*next) = (struct BoundaryCondition *)malloc(sizeof(**next));
 		struct BoundaryCondition *b = *next;
 
-		char edge_buffer[5];
-		sscanf(buffer, "%s %d %d %" NUMBER_FMT, edge_buffer, &b->start,
-		       &b->end, &b->value);
+		char edge_buffer[4];
+		char type_buffer[16];
+		sscanf(buffer, "%s %s %d %d %" NUMBER_FMT, edge_buffer,
+		       type_buffer, &b->start, &b->end, &b->value);
 
 		if (strncmp(edge_buffer, "X+", 2) == 0)
 			b->boundary = BC_XPLUS;
@@ -50,6 +51,17 @@ static void read_boundary_conditions(FILE *fp, struct Problem *problem)
 		else {
 			fprintf(stderr, "Invalid boundary designation: '%s'\n",
 				edge_buffer);
+			exit(1);
+		}
+
+		if (strcmp(type_buffer, "DIRICHLET") == 0)
+			b->type = BC_DIRICHLET;
+		else if (strcmp(type_buffer, "NEUMANN") == 0)
+			b->type = BC_NEUMANN;
+		else {
+			fprintf(stderr,
+				"Unrecognized boundary condition type: '%s'\n",
+				type_buffer);
 			exit(1);
 		}
 

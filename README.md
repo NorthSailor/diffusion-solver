@@ -28,11 +28,13 @@ Where:
 After these options have been given, the boundary conditions are defined in separate lines with the following format:
 
 ```
-BOUNDARY START END VALUE
+BOUNDARY TYPE START END VALUE
 ```
 
 All grid indices are zero-indexed and the end values are not inclusive.
 
 `BOUNDARY` can be one of: `X-`, `X+`, `Y-`, `Y+`.
 
-The parts of the grid's boundary that are not explicitly set get an implicit boundary condition to be equal to 0.
+`TYPE` can be either `DIRICHLET` or `NEUMANN`. For Neumann boundary conditions the value represents the outflow thus an inlet's flowrate would be negative.
+
+The parts of the grid's boundary that are not explicitly set get an implicit no-flow condition.

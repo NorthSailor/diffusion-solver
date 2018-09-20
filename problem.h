@@ -10,10 +10,14 @@
 #define BC_YPLUS 2
 #define BC_YMINUS 3
 
+#define BC_DIRICHLET 0
+#define BC_NEUMANN 1
+
 struct BoundaryCondition {
 	struct BoundaryCondition *next;
 
 	int boundary;
+	int type;
 	int start;
 	int end;
 
