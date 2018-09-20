@@ -33,10 +33,6 @@ static void apply_boundary_condition(struct Matrix *matrix,
 	 * and that the X value corresponds to columns while the Y value
 	 * to rows. In other words: index = y * columns + x (row-major
 	 * order) */
-	/* We apply Neumann BC's where the value is the spatial
-	 * derivative normal to the boundary, representing
-	 * inflow/outflow velocity.
-	 */
 	switch (b->boundary) {
 	case BC_XPLUS:
 		index = matrix->columns * (matrix->rows - 1) + b->start;
