@@ -22,6 +22,59 @@ void solver_free(struct Solver *solver)
 	free(solver);
 }
 
+static void apply_boundary_condition(struct Matrix *matrix,
+				     struct BoundaryCondition *b)
+{
+	int stride = 1;
+	int index = 0;
+	int derivative_offset = 0;
+
+	/* The following code assumes that the matrices are zero-indexed
+	 * and that the X value corresponds to columns while the Y value
+	 * to rows. In other words: index = y * columns + x (row-major
+	 * order) */
+	/* We apply Neumann BC's where the value is the spatial
+	 * derivative normal to the boundary, representing
+	 * inflow/outflow velocity.
+	 */
+	switch (b->boundary) {
+	case BC_XPLUS:
+		index = matrix->columns * (matrix->rows - 1) + b->start;
+		stride = 1;
+		derivative_offset = -matrix->columns;
+		break;
+	case BC_XMINUS:
+		index = b->start;
+		stride = 1;
+		derivative_offset = matrix->columns;
+		break;
+	case BC_YMINUS:
+		index = b->start * matrix->columns;
+		stride = matrix->columns;
+		derivative_offset = 1;
+		break;
+	case BC_YPLUS:
+		index = (b->start + 1) * matrix->columns - 1;
+		stride = matrix->columns;
+		derivative_offset = -1;
+		break;
+	}
+
+	for (int i = b->start; i < b->end; i++) {
+		float value;
+		switch (b->type) {
+		case BC_DIRICHLET:
+			value = b->value;
+			break;
+		case BC_NEUMANN:
+			value = matrix->data[index + derivative_offset]
+				+ b->value;
+		}
+		matrix->data[index] = value;
+		index += stride;
+	}
+}
+
 static void apply_boundary_conditions(struct Matrix *matrix,
 				      struct BoundaryCondition *first)
 {
@@ -46,48 +99,7 @@ static void apply_boundary_conditions(struct Matrix *matrix,
 
 	struct BoundaryCondition *b = first;
 	while (b) {
-		int stride = 1;
-		int index = 0;
-		int derivative_offset = 0;
-
-		/* The following code assumes that the matrices are zero-indexed
-		 * and that the X value corresponds to columns while the Y value
-		 * to rows. In other words: index = y * columns + x (row-major
-		 * order) */
-		/* We apply Neumann BC's where the value is the spatial
-		 * derivative normal to the boundary, representing
-		 * inflow/outflow velocity.
-		 */
-		switch (b->boundary) {
-		case BC_XPLUS:
-			index = matrix->columns * (matrix->rows - 1) + b->start;
-			stride = 1;
-			derivative_offset = -matrix->columns;
-			break;
-		case BC_XMINUS:
-			index = b->start;
-			stride = 1;
-			derivative_offset = matrix->columns;
-			break;
-		case BC_YMINUS:
-			index = b->start * matrix->columns;
-			stride = matrix->columns;
-			derivative_offset = 1;
-			break;
-		case BC_YPLUS:
-			index = (b->start + 1) * matrix->columns - 1;
-			stride = matrix->columns;
-			derivative_offset = -1;
-			break;
-		}
-
-		for (int i = b->start; i < b->end; i++) {
-			matrix->data[index] =
-				matrix->data[index + derivative_offset]
-				+ b->value;
-			index += stride;
-		}
-
+		apply_boundary_condition(matrix, b);
 		b = b->next;
 	}
 }
