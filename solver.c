@@ -155,6 +155,7 @@ void solver_solve(struct Solver *solver)
 
 		/* Check for convergence. */
 		if (solver->residual < tolerance) {
+			printf("Solution converged.\n", iteration_count);
 			break;
 		}
 
@@ -164,12 +165,11 @@ void solver_solve(struct Solver *solver)
 		}
 
 		if (iteration_count > 100000) {
-			printf("Max iteration count exceeded.\n");
-			return;
+			printf("Maximum iteration count exceeded.\n");
+			break;
 		}
 	}
-
-	printf("Solution converged after %d iterations.\n", iteration_count);
+	solver->iteration_count = iteration_count;
 }
 
 void solver_save_results(struct Solver *solver, FILE *fp)
@@ -223,4 +223,9 @@ void solver_save_velocity(struct Solver *solver, FILE *fp)
 
 	matrix_free(u);
 	matrix_free(v);
+}
+
+int solver_get_iteration_count(struct Solver *solver)
+{
+	return solver->iteration_count;
 }

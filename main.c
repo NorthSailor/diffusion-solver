@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "matrix.h"
+#include "performance-counter.h"
 #include "problem.h"
 #include "solver.h"
 
@@ -52,7 +53,18 @@ int main(int argc, char const *argv[])
 	struct Solver *solver = solver_from_problem(problem);
 	assert(solver != NULL);
 
+	struct PerformanceCounter *pf = performance_counter_new();
+	performance_counter_start(pf);
+
 	solver_solve(solver);
+
+	performance_counter_stop(pf);
+
+	performance_counter_set_iteration_count(
+		pf, solver_get_iteration_count(solver));
+
+	performance_counter_print_statistics(pf);
+	performance_counter_free(pf);
 
 	FILE *output_fp = fopen(output_file_path, "w");
 	if (!output_fp) {
@@ -68,7 +80,8 @@ int main(int argc, char const *argv[])
 	if (output_fp) {
 		solver_save_velocity(solver, output_fp);
 	} else {
-		fprintf(stderr, "Failed to open velocity field for writing.");
+		fprintf(stderr,
+			"Failed to open the velocity file for writing.");
 	}
 	fclose(output_fp);
 

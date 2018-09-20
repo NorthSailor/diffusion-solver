@@ -22,6 +22,8 @@ add_executable(diffusion
         matrix.c
         matrix.h
         number.h
+        performance-counter.c
+        performance-counter.h 
         problem.c
         problem.h
         solver.c
