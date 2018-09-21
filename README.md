@@ -2,12 +2,16 @@
 
 This program solves the Laplace equation with different boundary conditions on a rectangular structured grid.
 
-It takes a problem input file as input and produces an output binary file containing the final converged solution field (hopefully).
+It takes a problem input file as input and produces two binary files with the potential and flux fields as well as an XDMF file that describes the grid and the data formats, which you can open with Paraview or ViSit.
+
+The following is a temperature distribution on a square plate with the temperature fixed along its edges.
+
+![Screenshot](examples/screenshots/test200.png "Temperature distribution on a square plate.")
 
 ## Usage
 
 ```
-./diffusion <input-file> <output-file>
+./diffusion <input-file>
 ```
 
 As of now, the solver has a hardcoded condition to terminate after 5 million iterations if the convergence criterion is not met. This is a temporary solution, functionality to allow the user to configure both the convergence criterion and the maximum iteration count needs to be implemented.
@@ -40,9 +44,6 @@ All grid indices are zero-indexed and the end values are not inclusive.
 `TYPE` can be either `DIRICHLET` or `NEUMANN`. For Neumann boundary conditions the value represents the outflow thus an inlet's flowrate would be negative.
 
 The parts of the grid's boundary that are not explicitly set get an implicit no-flow condition.
-
-### Output file format
-The output file is a binary file containing the values of the potential throughout the grid. A velocity field with the velocity components interlaced will be written in `velocity.bin` in the working directory.
 
 ## Building
 

@@ -28,6 +28,8 @@ add_executable(diffusion
         problem.h
         solver.c
         solver.h
+        xdmf-generator.c
+        xdmf-generator.h
 )
 
 target_link_libraries(diffusion m)

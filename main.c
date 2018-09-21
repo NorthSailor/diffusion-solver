@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <assert.h>
+#include <unistd.h>
 #include "matrix.h"
 #include "performance-counter.h"
 #include "problem.h"
 #include "solver.h"
+#include "xdmf-generator.h"
 
 void print_double_usage()
 {
@@ -16,7 +18,39 @@ void print_double_usage()
 
 void print_usage()
 {
-	printf("Usage:\n\tdiffusion INPUT-FILE OUTPUT-FILE\n");
+	printf("Usage:\n\tdiffusion INPUT-FILE\n");
+}
+
+static void save_results(struct Solver *solver)
+{
+	FILE *output_fp = fopen("potential.bin", "w");
+	if (!output_fp) {
+		fprintf(stderr, "Failed to open output file '%s'.\n",
+			"potential.bin");
+		return;
+	}
+
+	solver_save_results(solver, output_fp);
+	fclose(output_fp);
+
+	output_fp = fopen("flux.bin", "w");
+	if (output_fp) {
+		solver_save_velocity(solver, output_fp);
+	} else {
+		fprintf(stderr,
+			"Failed to open the velocity file for writing.\n");
+		return;
+	}
+	fclose(output_fp);
+
+	output_fp = fopen("output.xdmf", "w");
+	if (output_fp) {
+		write_xdmf(output_fp, solver->problem->width,
+			   solver->problem->height);
+		fclose(output_fp);
+	} else {
+		fprintf(stderr, "Failed to write the XDMF file.\n");
+	}
 }
 
 int main(int argc, char const *argv[])
@@ -24,7 +58,7 @@ int main(int argc, char const *argv[])
 	printf("Diffusion Solver 0.0.1\n");
 	print_double_usage();
 
-	if (argc != 3) {
+	if (argc != 2) {
 		print_usage();
 		return 1;
 	}
@@ -66,24 +100,7 @@ int main(int argc, char const *argv[])
 	performance_counter_print_statistics(pf);
 	performance_counter_free(pf);
 
-	FILE *output_fp = fopen(output_file_path, "w");
-	if (!output_fp) {
-		fprintf(stderr, "Failed to open output file '%s'.\n",
-			output_file_path);
-		return 1;
-	}
-
-	solver_save_results(solver, output_fp);
-	fclose(output_fp);
-
-	output_fp = fopen("velocity.bin", "w");
-	if (output_fp) {
-		solver_save_velocity(solver, output_fp);
-	} else {
-		fprintf(stderr,
-			"Failed to open the velocity file for writing.");
-	}
-	fclose(output_fp);
+	save_results(solver);
 
 	solver_free(solver);
 
